@@ -1,0 +1,151 @@
+@import './Login.css';
+
+.signup-card {
+  width: 420px;
+  background-color: #234f1e;
+  border-radius: 18px;
+  padding: 65px 35px 35px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.signup-title {
+  text-align: center;
+  color: #f4d21f;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.select-input {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: #333;
+  padding-right: 42px;
+}
+
+.select-input option {
+  color: #333;
+}
+
+.dropdown-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.field-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.toggle-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.toggle-eye:hover {
+  opacity: 1;
+}
+
+.password-input {
+  padding-right: 42px;
+}
+
+.strength-wrapper {
+  background-color: rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-top: -8px;
+}
+
+.strength-bar {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+
+.strength-segment {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  transition: background-color 0.3s;
+}
+
+.strength-label {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.strength-checks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+}
+
+.strength-checks li {
+  font-size: 11px;
+  padding-left: 14px;
+  position: relative;
+  color: #ccc;
+}
+
+.strength-checks li::before {
+  content: '✗';
+  position: absolute;
+  left: 0;
+  color: #e53935;
+}
+
+.strength-checks li.pass {
+  color: #a5d6a7;
+}
+
+.strength-checks li.pass::before {
+  content: '✓';
+  color: #43a047;
+}
+
+.match-status {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: -10px;
+  padding-left: 4px;
+}
+
+.field-error {
+  color: #ff8a80;
+  font-size: 11px;
+  margin-top: -10px;
+  padding-left: 4px;
+}
+
+@media (max-width: 768px) {
+  .signup-card {
+    width: 90%;
+    padding: 60px 25px 30px;
+  }
+}
