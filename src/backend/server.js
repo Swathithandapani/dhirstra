@@ -16,7 +16,11 @@ app.use("/uploads", (req, res, next) => {
 }, express.static(UPLOADS_DIR));
 
 const db = mysql.createConnection({
-  host: "localhost", user: "root", password: "root", database: "dhirstra"
+  host: process.env.MYSQL_HOST || "localhost",
+  user: process.env.MYSQL_USER || "root",
+  password: process.env.MYSQL_PASSWORD || "root",
+  database: process.env.MYSQL_DATABASE || "dhirstra",
+  port: process.env.MYSQL_PORT || 3306
 });
 
 db.connect((err) => {
@@ -350,4 +354,4 @@ app.get('/blockchain/verify', (req, res) => {
   runBlockchain(['verify'], res);
 });
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+app.listen(process.env.PORT || 5000, () => console.log("Server running on port", process.env.PORT || 5000));
