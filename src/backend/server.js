@@ -85,6 +85,9 @@ db.connect((err) => {
   )`, () => {});
 });
 
+// ── HEALTH CHECK ──
+app.get('/', (req, res) => res.json({ status: 'ok' }));
+
 // ── AUTH ──
 app.post("/signup", (req, res) => {
   const { user_id, password, role } = req.body;
