@@ -7,6 +7,7 @@ import './MinistriesDashboard.css';
 import LanguageSelector from './LanguageSelector';
 import { useT } from './LanguageContext';
 import BlockchainAudit from './BlockchainAudit';
+import API from './api';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.5.207/build/pdf.worker.min.mjs`;
 
@@ -1266,8 +1267,8 @@ export default function MinistriesDashboard() {
 
   useEffect(() => {
     Promise.all([
-      fetch('http://localhost:5000/documents/nodal_forwarded').then(r => r.json()),
-      fetch('http://localhost:5000/ministry-decisions').then(r => r.json()),
+      fetch(`${API}/documents/nodal_forwarded`).then(r => r.json()),
+      fetch(`${API}/ministry-decisions`).then(r => r.json()),
     ]).then(([data, mdList]) => {
       setDocuments(Array.isArray(data) ? data : []);
       if (Array.isArray(mdList)) {
@@ -1292,7 +1293,7 @@ export default function MinistriesDashboard() {
     // Reload latest decisions before analyzing
     let freshDecisions = {};
     try {
-      const mdRes = await fetch('http://localhost:5000/ministry-decisions');
+      const mdRes = await fetch(`${API}/ministry-decisions`);
       if (mdRes.ok) {
         const mdList = await mdRes.json();
         if (Array.isArray(mdList)) {
@@ -1305,7 +1306,7 @@ export default function MinistriesDashboard() {
       // 1. Try to load stored Nodal analysis from DB first
       let analysis = null;
       try {
-        const stored = await fetch(`http://localhost:5000/analysis/${doc.file_path}`);
+        const stored = await fetch(`${API}/analysis/${doc.file_path}`);
         if (stored.ok) {
           const storedData = await stored.json();
           if (storedData && storedData.sections && storedData.info) {
@@ -1316,7 +1317,7 @@ export default function MinistriesDashboard() {
 
       // 2. Fall back to re-parsing PDF if no stored analysis
       if (!analysis) {
-        const url = `http://localhost:5000/uploads/${doc.file_path}`;
+        const url = `${API}/uploads/${doc.file_path}`;
         const fullText = await extractText(url, (cur, tot) => setProgress({ current: cur, total: tot }));
         analysis = analyzeDPR(fullText);
       }
@@ -1342,18 +1343,18 @@ export default function MinistriesDashboard() {
     if (!selected) return;
     setDeciding(true);
     try {
-      fetch('http://localhost:5000/blockchain/add', {
+      fetch(`${API}/blockchain/add`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dpr_id: selected.file_path, stage: 'C-EA Review', action: 'Approved', reviewer: 'Central Line Ministries' }),
       }).catch(() => {});
-      const res = await fetch('http://localhost:5000/ministry-approve', {
+      const res = await fetch(`${API}/ministry-approve`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_path: selected.file_path, decided_by: 'Central Line Ministries', decided_by_role: 'Ministry of Development of Southern Region' }),
       });
       if (res.ok) {
         setDecision('approved');
         reloadStatus();
-        fetch('http://localhost:5000/ministry-decisions').then(r=>r.json()).then(data=>{if(Array.isArray(data)){const map={};data.forEach(d=>{map[d.file_path]=d;});setDecisions(map);}}).catch(()=>{});
+        fetch(`${API}/ministry-decisions`).then(r=>r.json()).then(data=>{if(Array.isArray(data)){const map={};data.forEach(d=>{map[d.file_path]=d;});setDecisions(map);}}).catch(()=>{});
       }
     } catch { setError('Server unreachable.'); }
     setDeciding(false);
@@ -1363,18 +1364,18 @@ export default function MinistriesDashboard() {
     if (!selected || !rejectReason.trim()) return;
     setDeciding(true);
     try {
-      fetch('http://localhost:5000/blockchain/add', {
+      fetch(`${API}/blockchain/add`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dpr_id: selected.file_path, stage: 'C-EA Review', action: 'Rejected', reviewer: 'Central Line Ministries' }),
       }).catch(() => {});
-      const res = await fetch('http://localhost:5000/ministry-reject', {
+      const res = await fetch(`${API}/ministry-reject`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_path: selected.file_path, reason: rejectReason.trim() }),
       });
       if (res.ok) {
         setDecision('rejected'); setShowRejectBox(false); setRejectReason('');
         reloadStatus();
-        fetch('http://localhost:5000/ministry-decisions').then(r=>r.json()).then(data=>{if(Array.isArray(data)){const map={};data.forEach(d=>{map[d.file_path]=d;});setDecisions(map);}}).catch(()=>{});
+        fetch(`${API}/ministry-decisions`).then(r=>r.json()).then(data=>{if(Array.isArray(data)){const map={};data.forEach(d=>{map[d.file_path]=d;});setDecisions(map);}}).catch(()=>{});
       }
     } catch { setError('Server unreachable.'); }
     setDeciding(false);

@@ -3,6 +3,7 @@ import './Login.css';
 import { useNavigate } from "react-router-dom";
 import { useT } from './LanguageContext';
 import LanguageSelector from './LanguageSelector';
+import API from './api';
 function Login() {
   const navigate = useNavigate();
   const t = useT();
@@ -36,7 +37,7 @@ function Login() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:5000/login', {
+      const res = await fetch(`${API}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: username, password }),

@@ -7,6 +7,7 @@ import './NodalDashboard.css';
 import LanguageSelector from './LanguageSelector';
 import { useT } from './LanguageContext';
 import BlockchainAudit from './BlockchainAudit';
+import API from './api';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.5.207/build/pdf.worker.min.mjs`;
 
@@ -354,28 +355,28 @@ export default function NodalDashboard() {
   const [ministryDecisions, setMinistryDecisions] = useState({});
 
   const loadDocs = () => {
-    fetch('http://localhost:5000/documents/state_gov_user')
+    fetch(`${API}/documents/state_gov_user`)
       .then((r) => r.json())
       .then((data) => setDocuments(Array.isArray(data) ? data : []))
       .catch(() => setError('Could not connect to server.'));
   };
 
   const loadForwarded = () => {
-    fetch('http://localhost:5000/documents/nodal_forwarded')
+    fetch(`${API}/documents/nodal_forwarded`)
       .then((r) => r.json())
       .then((data) => setForwarded(Array.isArray(data) ? data : []))
       .catch(() => {});
   };
 
   const loadRejected = () => {
-    fetch('http://localhost:5000/documents/nodal_rejected')
+    fetch(`${API}/documents/nodal_rejected`)
       .then((r) => r.json())
       .then((data) => setRejected(Array.isArray(data) ? data : []))
       .catch(() => {});
   };
 
   const loadMinistryDecisions = () => {
-    fetch('http://localhost:5000/ministry-decisions')
+    fetch(`${API}/ministry-decisions`)
       .then(r => r.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -397,14 +398,14 @@ export default function NodalDashboard() {
     setProgress({ current: 0, total: 0 });
     setActiveTab('check');
     try {
-      const url = `http://localhost:5000/uploads/${doc.file_path}`;
+      const url = `${API}/uploads/${doc.file_path}`;
       let fullText = await extractText(url, (cur, tot) => setProgress({ current: cur, total: tot }));
 
       // Scanned PDF  no text layer  use SSE OCR endpoint
       if (fullText.replace(/---\s*PAGE\s*\d+\s*---/g, '').trim().length < 100) {
         fullText = await new Promise((resolve, reject) => {
           setProgress({ current: 0, total: 0, ocr: true });
-          const es = new EventSource(`http://localhost:5000/ocr-extract/${doc.file_path}`);
+          const es = new EventSource(`${API}/ocr-extract/${doc.file_path}`);
           es.onmessage = (e) => {
             const msg = JSON.parse(e.data);
             if (msg.type === 'start') {
@@ -435,7 +436,7 @@ export default function NodalDashboard() {
     setSaving(true);
     try {
       // 1. Save extracted analysis to DB so Ministry can use it directly
-      await fetch('http://localhost:5000/save-analysis', {
+      await fetch(`${API}/save-analysis`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -445,11 +446,11 @@ export default function NodalDashboard() {
       });
       // 2. Forward DPR
       // Log to blockchain
-      fetch('http://localhost:5000/blockchain/add', {
+      fetch(`${API}/blockchain/add`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dpr_id: selected.file_path, stage: 'B-AE2 Review', action: 'Forwarded', reviewer: 'Nodal Division' }),
       }).catch(() => {});
-      const res = await fetch('http://localhost:5000/forward-dpr', {
+      const res = await fetch(`${API}/forward-dpr`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -478,11 +479,11 @@ export default function NodalDashboard() {
     setRejecting(true);
     try {
       // Log to blockchain
-      fetch('http://localhost:5000/blockchain/add', {
+      fetch(`${API}/blockchain/add`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dpr_id: selected.file_path, stage: 'B-AE2 Review', action: 'Rejected', reviewer: 'Nodal Division' }),
       }).catch(() => {});
-      const res = await fetch('http://localhost:5000/reject-dpr', {
+      const res = await fetch(`${API}/reject-dpr`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
