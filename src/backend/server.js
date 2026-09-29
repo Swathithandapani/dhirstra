@@ -20,7 +20,10 @@ const db = mysql.createConnection({
   user: process.env.MYSQL_USER || "root",
   password: process.env.MYSQL_PASSWORD || "root",
   database: process.env.MYSQL_DATABASE || "dhirstra",
-  port: process.env.MYSQL_PORT || 3306
+  port: process.env.MYSQL_PORT || 3306,
+  ssl: process.env.MYSQL_HOST && process.env.MYSQL_HOST !== 'localhost'
+    ? { rejectUnauthorized: false }
+    : false
 });
 
 db.connect((err) => {
