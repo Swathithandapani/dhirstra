@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProjectStatus } from './useProjectStatus';
 import ProjectStatusBanner, { ProjectStatusRow } from './ProjectStatusBanner';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import './NodalDashboard.css';
 import LanguageSelector from './LanguageSelector';
 import { useT } from './LanguageContext';
+import BlockchainAudit from './BlockchainAudit';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.5.207/build/pdf.worker.min.mjs`;
 
@@ -108,7 +109,7 @@ const analyzeDPR = (text) => {
   const locationMatch =
     clean.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+[Dd]istrict/i) ||
     clean.match(/(?:at|in)\s+([A-Z][A-Za-z.]+(?:\s+[A-Z][A-Za-z.]+)*)\s+in\s+([A-Z][a-z]+\s+[Dd]istrict)/i) ||
-    clean.match(/(?:SHILLONG|UMSAWLI|MEGHALAYA|ARUNACHAL|ASSAM|MANIPUR|MIZORAM|NAGALAND|SIKKIM|TRIPURA|SIVAGANGAI|SIVAGANGA|CHENNAI|MADURAI|COIMBATORE|TRICHY|TAMIL\s*NADU)/i) ||
+    clean.match(/(?:SHILLONG|UMSAWLI|MEGHALAYA|ARUNACHAL|ASSAM|MANIPUR|MIZORAM|NAGALAND|SIKKIM|TRIPURA|SIVAGANGAI|SIVAGANGA|CHENNAI|MADURAI|COIMBATORE|TRICHY|TAMIL\s*NADU|KERALA|KARNATAKA|ANDHRA|TELANGANA|PUDUCHERRY)/i) ||
     clean.match(/(?:location|district|state|place|site)\s*[:\-]\s*([^\n]{3,80})/i);
   let location = 'Not found';
   if (locationMatch) {
@@ -443,6 +444,11 @@ export default function NodalDashboard() {
         }),
       });
       // 2. Forward DPR
+      // Log to blockchain
+      fetch('http://localhost:5000/blockchain/add', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dpr_id: selected.file_path, stage: 'B-AE2 Review', action: 'Forwarded', reviewer: 'Nodal Division' }),
+      }).catch(() => {});
       const res = await fetch('http://localhost:5000/forward-dpr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -471,6 +477,11 @@ export default function NodalDashboard() {
     if (!selected || !rejectReason.trim()) return;
     setRejecting(true);
     try {
+      // Log to blockchain
+      fetch('http://localhost:5000/blockchain/add', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dpr_id: selected.file_path, stage: 'B-AE2 Review', action: 'Rejected', reviewer: 'Nodal Division' }),
+      }).catch(() => {});
       const res = await fetch('http://localhost:5000/reject-dpr', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -506,9 +517,9 @@ export default function NodalDashboard() {
     <div className="nd-page">
       <header className="nd-header">
         <div className="nd-header-left">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/200px-Emblem_of_India.svg.png" alt="" className="nd-emblem" />
+          <img src="https://www.cleanpng.com/png-tamil-nadu-state-emblem-png-with-lion-and-tower-4kvtim/" alt="Tamil Nadu Emblem" className="nd-emblem" />
           <div>
-            <h1>Poorvottar Vikas Setu</h1>
+            <h1>B — AE² Review</h1>
             <p>{t('nodal_dash')}</p>
           </div>
         </div>
@@ -531,10 +542,11 @@ export default function NodalDashboard() {
 
       <nav className="nd-nav">
         {[
-          { key: 'overview',  label: t('overview') },
-          { key: 'check',     label: t('check_dpr') },
-          { key: 'forwarded', label: t('forwarded_dprs') },
-          { key: 'rejected',  label: t('rejected_dprs') },
+          { key: 'overview',    label: t('overview') },
+          { key: 'check',       label: t('check_dpr') },
+          { key: 'forwarded',   label: t('forwarded_dprs') },
+          { key: 'rejected',    label: t('rejected_dprs') },
+          { key: 'blockchain',  label: '⛓ Audit Trail' },
         ].map(tab => (
           <button key={tab.key} className={`nd-nav-btn ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>
             {tab.label}
@@ -865,6 +877,16 @@ export default function NodalDashboard() {
           </div>
         )}
 
+        {/*  BLOCKCHAIN  */}
+        {activeTab === 'blockchain' && (
+          <div className="nd-section">
+            <h2 className="nd-section-title">⛓ Blockchain Audit Trail — B (AE² Review)</h2>
+            <p style={{color:'#666',fontSize:13,marginBottom:8}}>All DPR verifications, forwards and rejections from this stage are permanently recorded.</p>
+            <BlockchainAudit title="B — AE² Review Audit Trail" />
+          </div>
+        )}
+
+
         {/*  REJECTED  */}
         {activeTab === 'rejected' && (
           <div className="nd-section">
@@ -893,7 +915,7 @@ export default function NodalDashboard() {
       </main>
 
       <footer className="nd-footer">
-        <p> 2024 Ministry of Development of North Eastern Region. All Rights Reserved.</p>
+        <p> 2024 Ministry of Development of Southern Region. All Rights Reserved.</p>
       </footer>
     </div>
   );

@@ -5,13 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import './StateGovDashboard.css';
 import LanguageSelector from './LanguageSelector';
 import { useT } from './LanguageContext';
+import BlockchainAudit from './BlockchainAudit';
 
 const mockProposals = [
-  { id: 'DPR-2024-001', title: 'NH Extension - Arunachal Pradesh', type: 'Construction DPR', status: 'Under Review', date: '12-Jan-2024', amount: ' 245 Cr', priority: 'High', file: 'NH_Extension_DPR.pdf' },
-  { id: 'DPR-2024-002', title: 'Community Hall Construction - Assam', type: 'Construction DPR', status: 'Approved', date: '18-Jan-2024', amount: ' 120 Cr', priority: 'Medium', file: 'Community_Hall_DPR.pdf' },
-  { id: 'DPR-2024-003', title: 'Rural Road Construction - Manipur', type: 'Construction DPR', status: 'Pending', date: '25-Jan-2024', amount: ' 89 Cr', priority: 'High', file: 'Rural_Road_DPR.pdf' },
-  { id: 'DPR-2024-004', title: 'School Building Construction - Meghalaya', type: 'Construction DPR', status: 'Rejected', date: '02-Feb-2024', amount: ' 310 Cr', priority: 'Low', file: 'School_Building_DPR.pdf' },
-  { id: 'DPR-2024-005', title: 'Bridge Construction - Mizoram', type: 'Construction DPR', status: 'Under Review', date: '10-Feb-2024', amount: ' 175 Cr', priority: 'Medium', file: 'Bridge_Construction_DPR.pdf' },
+  { id: 'DPR-2024-001', title: 'NH Extension - Tamil Nadu', type: 'Construction DPR', status: 'Under Review', date: '12-Jan-2024', amount: ' 245 Cr', priority: 'High', file: 'NH_Extension_DPR.pdf' },
+  { id: 'DPR-2024-002', title: 'Community Hall Construction - Karnataka', type: 'Construction DPR', status: 'Approved', date: '18-Jan-2024', amount: ' 120 Cr', priority: 'Medium', file: 'Community_Hall_DPR.pdf' },
+  { id: 'DPR-2024-003', title: 'Rural Road Construction - Kerala', type: 'Construction DPR', status: 'Pending', date: '25-Jan-2024', amount: ' 89 Cr', priority: 'High', file: 'Rural_Road_DPR.pdf' },
+  { id: 'DPR-2024-004', title: 'School Building Construction - Andhra Pradesh', type: 'Construction DPR', status: 'Rejected', date: '02-Feb-2024', amount: ' 310 Cr', priority: 'Low', file: 'School_Building_DPR.pdf' },
+  { id: 'DPR-2024-005', title: 'Bridge Construction - Telangana', type: 'Construction DPR', status: 'Under Review', date: '10-Feb-2024', amount: ' 175 Cr', priority: 'Medium', file: 'Bridge_Construction_DPR.pdf' },
 ];
 
 const financialLimits = [
@@ -145,6 +146,11 @@ export default function StateGovDashboard() {
       const res = await fetch('http://localhost:5000/upload', { method: 'POST', body: data });
       const result = await res.json();
       if (res.ok) {
+        // Log to blockchain
+        fetch('http://localhost:5000/blockchain/add', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dpr_id: formData.file.name, stage: 'A-AE Review', action: 'Submitted', reviewer: 'State Government' }),
+        }).catch(() => {});
         const newProposal = {
           id: `DPR-${proposals.length + 1}`,
           title: formData.file.name.replace('.pdf', '').replace(/_/g, ' '),
@@ -182,9 +188,9 @@ export default function StateGovDashboard() {
       {/* Header */}
       <header className="sg-header">
         <div className="sg-header-left">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/200px-Emblem_of_India.svg.png" alt="" className="sg-emblem" />
+          <img src="https://www.cleanpng.com/png-tamil-nadu-state-emblem-png-with-lion-and-tower-4kvtim/" alt="Tamil Nadu Emblem" className="sg-emblem" />
           <div>
-            <h1>Poorvottar Vikas Setu</h1>
+            <h1>A — AE Review</h1>
             <p>{t('state_gov_dash')}</p>
           </div>
         </div>
@@ -208,11 +214,12 @@ export default function StateGovDashboard() {
       {/* Nav Tabs */}
       <nav className="sg-nav">
         {[
-          { key: 'overview', label: t('overview') },
-          { key: 'submit', label: t('submit_proposals') },
-          { key: 'track', label: t('track_status') },
-          { key: 'limits', label: t('financial_limits') },
-          { key: 'prioritize', label: t('prioritize') },
+          { key: 'overview',    label: t('overview') },
+          { key: 'submit',      label: t('submit_proposals') },
+          { key: 'track',       label: t('track_status') },
+          { key: 'limits',      label: t('financial_limits') },
+          { key: 'prioritize',  label: t('prioritize') },
+          { key: 'blockchain',  label: '⛓ Audit Trail' },
         ].map(tab => (
           <button key={tab.key} className={`sg-nav-btn ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>
             {tab.label}
@@ -417,6 +424,15 @@ export default function StateGovDashboard() {
           </div>
         )}
 
+        {/* BLOCKCHAIN AUDIT TRAIL */}
+        {activeTab === 'blockchain' && (
+          <div className="sg-section">
+            <h2 className="sg-section-title">⛓ Blockchain Audit Trail — A (AE Review)</h2>
+            <p style={{color:'#666',fontSize:13,marginBottom:8}}>Every DPR submission from this stage is permanently recorded in the tamper-evident ledger.</p>
+            <BlockchainAudit title="A — AE Review Audit Trail" />
+          </div>
+        )}
+
         {/* PRIORITIZE */}
         {activeTab === 'prioritize' && (
           <div className="sg-section">
@@ -449,7 +465,7 @@ export default function StateGovDashboard() {
       </main>
 
       <footer className="sg-footer">
-        <p> 2024 Ministry of Development of North Eastern Region. All Rights Reserved.</p>
+        <p> 2024 Ministry of Development of Southern Region. All Rights Reserved.</p>
       </footer>
     </div>
   );

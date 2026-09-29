@@ -1,0 +1,17 @@
+{
+  "dpr_id": "REPLACE_WITH_YOUR_DPR_FILENAME_WITHOUT_EXTENSION",
+  "description": "Ground-truth keywords for this DPR document. Fill in manually after reading the document.",
+  "keywords": [
+    "project cost",
+    "RCC construction",
+    "M25 concrete",
+    "project duration",
+    "earthwork excavation",
+    "reinforced cement concrete",
+    "detailed project report",
+    "construction agency",
+    "estimated cost",
+    "structural design"
+  ],
+  "notes": "Add or remove keywords as appropriate for your specific DPR. Use lowercase phrases. Each keyword should be a meaningful term or phrase that a government official would search for."
+}

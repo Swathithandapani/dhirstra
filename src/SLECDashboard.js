@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import './SLECDashboard.css';
 import LanguageSelector from './LanguageSelector';
 import { useT } from './LanguageContext';
+import BlockchainAudit from './BlockchainAudit';
 
 const STATUS_COLOR = {
   'On Track':    '#43a047',
@@ -103,6 +104,10 @@ export default function SLECDashboard() {
     const newOM         = proj.omCompliance;
     const newRemarks    = remarks[proj.file_path] || '';
     try {
+      fetch('http://localhost:5000/blockchain/add', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dpr_id: proj.file_path, stage: 'D-SC Review', action: 'Verified', reviewer: 'SLEC' }),
+      }).catch(() => {});
       await fetch('http://localhost:5000/slec-update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -141,10 +146,10 @@ export default function SLECDashboard() {
     <div className="slec-page">
       <header className="slec-header">
         <div className="slec-header-left">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/200px-Emblem_of_India.svg.png" alt="" className="slec-emblem" />
+          <img src="https://www.cleanpng.com/png-tamil-nadu-state-emblem-png-with-lion-and-tower-4kvtim/" alt="Tamil Nadu Emblem" className="slec-emblem" />
           <div>
-            <h1>Poorvottar Vikas Setu</h1>
-            <p>{t('slec_dash')}</p>
+            <h1>D — SC Review</h1>
+            <p>SC Review Dashboard</p>
           </div>
         </div>
         <div className="slec-header-right">
@@ -161,6 +166,7 @@ export default function SLECDashboard() {
           { key: 'compliance',  label: 'Compliance Monitor' },
           { key: 'om',          label: 'O&M Mechanisms' },
           { key: 'reports',     label: 'Reports' },
+          { key: 'blockchain',  label: '⛓ Audit Trail' },
         ].map(tab => (
           <button key={tab.key} className={`slec-nav-btn ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>
             {tab.label}
@@ -518,10 +524,19 @@ export default function SLECDashboard() {
           </div>
         )}
 
+      {/* BLOCKCHAIN */}
+        {activeTab === 'blockchain' && (
+          <div className="slec-section">
+            <h2 className="slec-section-title">⛓ Blockchain Audit Trail — D (SC Review)</h2>
+            <p style={{color:'#666',fontSize:13,marginBottom:8}}>All SLEC monitoring updates are permanently recorded.</p>
+            <BlockchainAudit title="D — SC Review Audit Trail" />
+          </div>
+        )}
+
       </main>
 
       <footer className="slec-footer">
-        <p>2024 Ministry of Development of North Eastern Region — SLEC Monitoring Portal</p>
+        <p>2024 Ministry of Development of Southern Region — SLEC Monitoring Portal</p>
       </footer>
     </div>
   );

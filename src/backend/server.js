@@ -313,4 +313,41 @@ app.get("/ocr-extract/:filename", async (req, res) => {
   }
 });
 
+// ── BLOCKCHAIN AUDIT TRAIL ──
+const { execFile } = require('child_process');
+const PYTHON = process.platform === 'win32' ? 'python' : 'python3';
+const BLOCKCHAIN_SCRIPT = path.join(__dirname, 'blockchain.py');
+
+function runBlockchain(args, res) {
+  execFile(PYTHON, [BLOCKCHAIN_SCRIPT, ...args], { encoding: 'utf8' }, (err, stdout, stderr) => {
+    if (err) return res.status(500).json({ message: 'Blockchain error', error: stderr || err.message });
+    try { res.json(JSON.parse(stdout)); }
+    catch(e) { res.status(500).json({ message: 'Parse error', raw: stdout }); }
+  });
+}
+
+// Add a block: POST /blockchain/add
+// Body: { dpr_id, stage, action, reviewer }
+app.post('/blockchain/add', (req, res) => {
+  const { dpr_id, stage, action, reviewer } = req.body;
+  if (!dpr_id || !stage || !action || !reviewer)
+    return res.status(400).json({ message: 'Missing fields: dpr_id, stage, action, reviewer' });
+  runBlockchain(['add', dpr_id, stage, action, reviewer], res);
+});
+
+// Get full chain: GET /blockchain/chain
+app.get('/blockchain/chain', (req, res) => {
+  runBlockchain(['chain'], res);
+});
+
+// Get trail for one DPR: GET /blockchain/trail/:dpr_id
+app.get('/blockchain/trail/:dpr_id', (req, res) => {
+  runBlockchain(['trail', req.params.dpr_id], res);
+});
+
+// Verify chain integrity: GET /blockchain/verify
+app.get('/blockchain/verify', (req, res) => {
+  runBlockchain(['verify'], res);
+});
+
 app.listen(5000, () => console.log("Server running on port 5000"));

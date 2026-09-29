@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useProjectStatus } from './useProjectStatus';
 import ProjectStatusBanner from './ProjectStatusBanner';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import './MinistriesDashboard.css';
 import LanguageSelector from './LanguageSelector';
 import { useT } from './LanguageContext';
+import BlockchainAudit from './BlockchainAudit';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.5.207/build/pdf.worker.min.mjs`;
 
@@ -1341,9 +1342,13 @@ export default function MinistriesDashboard() {
     if (!selected) return;
     setDeciding(true);
     try {
+      fetch('http://localhost:5000/blockchain/add', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dpr_id: selected.file_path, stage: 'C-EA Review', action: 'Approved', reviewer: 'Central Line Ministries' }),
+      }).catch(() => {});
       const res = await fetch('http://localhost:5000/ministry-approve', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_path: selected.file_path, decided_by: 'Central Line Ministries', decided_by_role: 'Ministry of Development of North Eastern Region' }),
+        body: JSON.stringify({ file_path: selected.file_path, decided_by: 'Central Line Ministries', decided_by_role: 'Ministry of Development of Southern Region' }),
       });
       if (res.ok) {
         setDecision('approved');
@@ -1358,6 +1363,10 @@ export default function MinistriesDashboard() {
     if (!selected || !rejectReason.trim()) return;
     setDeciding(true);
     try {
+      fetch('http://localhost:5000/blockchain/add', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dpr_id: selected.file_path, stage: 'C-EA Review', action: 'Rejected', reviewer: 'Central Line Ministries' }),
+      }).catch(() => {});
       const res = await fetch('http://localhost:5000/ministry-reject', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_path: selected.file_path, reason: rejectReason.trim() }),
@@ -1397,10 +1406,10 @@ export default function MinistriesDashboard() {
     <div className="md-page">
       <header className="md-header">
         <div className="md-header-left">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/200px-Emblem_of_India.svg.png" alt="" className="md-emblem" />
+          <img src="https://www.cleanpng.com/png-tamil-nadu-state-emblem-png-with-lion-and-tower-4kvtim/" alt="Tamil Nadu Emblem" className="md-emblem" />
           <div>
-            <h1>Poorvottar Vikas Setu</h1>
-            <p>{t('ministries_dash')}</p>
+            <h1>C — EA Review</h1>
+            <p>EA Review Dashboard</p>
           </div>
         </div>
         <div className="md-header-right">
@@ -1424,6 +1433,7 @@ export default function MinistriesDashboard() {
         {[
           { key: 'overview',    label: t('overview') },
           { key: 'twin',        label: t('digital_twin') },
+          { key: 'blockchain',  label: '⛓ Audit Trail' },
           
         ].map(tab => (
           <button key={tab.key} className={`md-nav-btn ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>
@@ -1570,7 +1580,7 @@ export default function MinistriesDashboard() {
                     <div style={{background:'#e8f5e9',border:'1px solid #a5d6a7',borderRadius:'8px',padding:'14px 16px'}}>
                       <p style={{fontWeight:700,color:'#2e7d32',fontSize:'14px'}}>DPR Approved by Ministry</p>
                       <p style={{fontSize:'12px',color:'#555',marginTop:'4px'}}>Approved by: <strong>{decisions[selected?.file_path]?.decided_by || 'Central Line Ministries'}</strong></p>
-                      <p style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>{decisions[selected?.file_path]?.decided_by_role || 'Ministry of Development of North Eastern Region'}</p>
+                      <p style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>{decisions[selected?.file_path]?.decided_by_role || 'Ministry of Development of Southern Region'}</p>
                       <p style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>{decisions[selected?.file_path]?.decided_at ? new Date(decisions[selected.file_path].decided_at).toLocaleString('en-GB') : ''}</p>
                     </div>
                   )}
@@ -1578,7 +1588,7 @@ export default function MinistriesDashboard() {
                     <div style={{background:'#ffebee',border:'1px solid #ffcdd2',borderRadius:'8px',padding:'14px 16px'}}>
                       <p style={{fontWeight:700,color:'#c62828',fontSize:'14px'}}>DPR Rejected by Ministry</p>
                       <p style={{fontSize:'12px',color:'#555',marginTop:'4px'}}>Rejected by: <strong>{decisions[selected?.file_path]?.decided_by || 'Central Line Ministries'}</strong></p>
-                      <p style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>{decisions[selected?.file_path]?.decided_by_role || 'Ministry of Development of North Eastern Region'}</p>
+                      <p style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>{decisions[selected?.file_path]?.decided_by_role || 'Ministry of Development of Southern Region'}</p>
                       {decisions[selected?.file_path]?.reason && <p style={{fontSize:'12px',color:'#c62828',marginTop:'4px'}}>Reason: {decisions[selected.file_path].reason}</p>}
                       <p style={{fontSize:'11px',color:'#888',marginTop:'2px'}}>{decisions[selected?.file_path]?.decided_at ? new Date(decisions[selected.file_path].decided_at).toLocaleString('en-GB') : ''}</p>
                     </div>
@@ -1898,10 +1908,19 @@ export default function MinistriesDashboard() {
           </div>
         )}
 
+      {/*  BLOCKCHAIN  */}
+        {activeTab === 'blockchain' && (
+          <div className="md-section">
+            <h2 className="md-section-title">⛓ Blockchain Audit Trail — C (EA Review)</h2>
+            <p style={{color:'#666',fontSize:13,marginBottom:8}}>All Ministry approvals and rejections are permanently recorded.</p>
+            <BlockchainAudit title="C — EA Review Audit Trail" />
+          </div>
+        )}
+
       </main>
 
       <footer className="md-footer">
-        <p> 2024 Ministry of Development of North Eastern Region. All Rights Reserved.</p>
+        <p> 2024 Ministry of Development of Southern Region. All Rights Reserved.</p>
       </footer>
     </div>
   );

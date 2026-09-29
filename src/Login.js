@@ -68,8 +68,8 @@ function Login() {
         <div className="login-card">
           <div className="emblem-wrapper">
             <img 
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/200px-Emblem_of_India.svg.png" 
-              alt="" 
+              src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Seal_of_Tamil_Nadu.svg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original" 
+              alt="Tamil Nadu Emblem" 
             />
           </div>
 

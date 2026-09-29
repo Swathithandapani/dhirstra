@@ -1,0 +1,23 @@
+# ── Core PDF extraction ────────────────────────────────────────────────────────
+pdfplumber>=0.10.0          # direct text extraction from PDFs
+
+# ── OCR (optional — only needed for scanned/image-based PDFs) ─────────────────
+pdf2image>=1.16.0           # converts PDF pages to PIL images for OCR
+pytesseract>=0.3.10         # Python wrapper for Tesseract OCR engine
+Pillow>=10.0.0              # image processing (required by pdf2image)
+
+# ── NLP / Keyword extraction ───────────────────────────────────────────────────
+scikit-learn>=1.3.0         # TF-IDF (TfidfVectorizer)
+yake>=0.4.8                 # YAKE unsupervised keyword extractor
+keybert>=0.8.0              # KeyBERT context-aware keyword extractor
+sentence-transformers>=2.2.0  # BERT models used by KeyBERT
+
+# ── Text preprocessing ─────────────────────────────────────────────────────────
+nltk>=3.8.0                 # stopwords list
+
+# ── Visualisation ──────────────────────────────────────────────────────────────
+matplotlib>=3.7.0           # graphs and charts
+numpy>=1.24.0               # numerical operations
+
+# ── Utilities ──────────────────────────────────────────────────────────────────
+tqdm>=4.65.0                # progress bars (used internally by sentence-transformers)
