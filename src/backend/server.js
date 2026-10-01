@@ -35,7 +35,7 @@ const db = mysql.createConnection({
 });
 
 db.connect((err) => {
-  if (err) { console.log("DB Error:", err); return; }
+  if (err) { console.log("DB Error:", err); }
   console.log("MySQL Connected");
 
   db.query(`CREATE TABLE IF NOT EXISTS users (
@@ -382,7 +382,7 @@ app.get('/blockchain/verify', (req, res) => {
   runBlockchain(['verify'], res);
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Server running on port", PORT);
