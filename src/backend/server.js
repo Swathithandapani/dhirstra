@@ -5,110 +5,102 @@ const mysql = require("mysql2");
 const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
 const { createWorker } = require("tesseract.js");
 
 const app = express();
 
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
-  if (req.method === "OPTIONS") { res.sendStatus(200); return; }
-  next();
-});
+
+// ================= CORS =================
+
+app.use(cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.options("*", cors());
+
+
+// ================= MIDDLEWARE =================
 
 app.use(express.json());
 
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-if (!require('fs').existsSync(UPLOADS_DIR)) require('fs').mkdirSync(UPLOADS_DIR, { recursive: true });
-app.use("/uploads", (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  next();
-}, express.static(UPLOADS_DIR));
+
+// Railway test route
+app.get("/", (req,res)=>{
+    res.json({
+        status:"Backend running",
+        message:"Dhirstra API is live"
+    });
+});
+
+app.get("/test",(req,res)=>{
+    res.send("Backend working");
+});
+
+
+// ================= UPLOADS =================
+
+const UPLOADS_DIR = path.join(__dirname,"uploads");
+
+if(!fs.existsSync(UPLOADS_DIR)){
+    fs.mkdirSync(UPLOADS_DIR,{recursive:true});
+}
+
+
+app.use(
+    "/uploads",
+    express.static(UPLOADS_DIR)
+);
+
+
+// ================= MYSQL =================
 
 const db = mysql.createConnection({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE,
-  port: process.env.MYSQL_PORT
+
+    host: process.env.MYSQL_HOST,
+
+    user: process.env.MYSQL_USER,
+
+    password: process.env.MYSQL_PASSWORD,
+
+    database: process.env.MYSQL_DATABASE,
+
+    port: process.env.MYSQL_PORT
+
 });
 
-db.connect((err) => {
-  if (err) { console.log("DB Error:", err); }
-  console.log("MySQL Connected");
 
-  db.query(`CREATE TABLE IF NOT EXISTS users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    role VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`, () => {});
+db.connect((err)=>{
 
-  db.query(`CREATE TABLE IF NOT EXISTS documents (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id VARCHAR(100) NOT NULL,
-    file_path VARCHAR(255) NOT NULL,
-    dpr VARCHAR(255) DEFAULT NULL,
-    reason TEXT DEFAULT NULL,
-    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`, () => {});
+    if(err){
 
-  db.query(`CREATE TABLE IF NOT EXISTS dpr_analysis (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    file_path VARCHAR(255) UNIQUE,
-    analysis_data LONGTEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`, () => {});
+        console.log("MYSQL CONNECTION ERROR:",err.message);
 
-  db.query(`CREATE TABLE IF NOT EXISTS ministry_decisions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    file_path VARCHAR(255) UNIQUE,
-    decision VARCHAR(20),
-    reason TEXT,
-    decided_by VARCHAR(100),
-    decided_by_role VARCHAR(100),
-    decided_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  )`, () => {});
+    }
+    else{
 
-  db.query("ALTER TABLE ministry_decisions ADD COLUMN IF NOT EXISTS decided_by VARCHAR(100) DEFAULT NULL", () => {});
-  db.query("ALTER TABLE ministry_decisions ADD COLUMN IF NOT EXISTS decided_by_role VARCHAR(100) DEFAULT NULL", () => {});
+        console.log("MySQL Connected");
 
-  // Unified project status table — single source of truth for all dashboards
-  db.query(`CREATE TABLE IF NOT EXISTS project_status (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    file_path VARCHAR(255) UNIQUE,
-    dpr_name VARCHAR(255),
-    title TEXT,
-    location VARCHAR(255),
-    budget VARCHAR(100),
-    duration VARCHAR(100),
-    agency TEXT,
-    spec VARCHAR(255),
-    nodal_status VARCHAR(50) DEFAULT 'Pending',
-    nodal_forwarded_at TIMESTAMP NULL,
-    nodal_rejected_at TIMESTAMP NULL,
-    nodal_reject_reason TEXT,
-    ministry_decision VARCHAR(20) DEFAULT NULL,
-    ministry_decided_by VARCHAR(100),
-    ministry_decided_by_role VARCHAR(100),
-    ministry_decided_at TIMESTAMP NULL,
-    ministry_reject_reason TEXT,
-    slec_progress INT DEFAULT 0,
-    slec_impl_status VARCHAR(50) DEFAULT 'Not Started',
-    slec_timeline_compliance VARCHAR(50) DEFAULT 'Under Review',
-    slec_quality_compliance VARCHAR(50) DEFAULT 'Under Review',
-    slec_om_compliance VARCHAR(50) DEFAULT 'Under Review',
-    slec_remarks TEXT,
-    slec_updated_at TIMESTAMP NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  )`, () => {});
+    }
+
 });
 
-// ── HEALTH CHECK ──
-app.get('/', (req, res) => res.json({ status: 'ok' }));
+
+// ================= REQUEST LOGGER =================
+
+app.use((req,res,next)=>{
+
+    console.log(
+        new Date().toISOString(),
+        req.method,
+        req.url
+    );
+
+    next();
+
+});
 
 // ── AUTH ──
 app.post("/signup", (req, res) => {
@@ -384,6 +376,9 @@ app.get('/blockchain/verify', (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log("Server running on port", PORT);
+
+app.listen(PORT, "0.0.0.0", ()=>{
+
+    console.log(`Server running on port ${PORT}`);
+
 });
