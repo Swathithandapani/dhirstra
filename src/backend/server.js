@@ -8,7 +8,7 @@ const path = require("path");
 const { createWorker } = require("tesseract.js");
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: '*' }));
 app.use(express.json());
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -29,8 +29,22 @@ db.connect((err) => {
   if (err) { console.log("DB Error:", err); return; }
   console.log("MySQL Connected");
 
-  db.query("ALTER TABLE documents ADD COLUMN IF NOT EXISTS dpr VARCHAR(255) DEFAULT NULL", () => {});
-  db.query("ALTER TABLE documents ADD COLUMN IF NOT EXISTS reason TEXT DEFAULT NULL", () => {});
+  db.query(`CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, () => {});
+
+  db.query(`CREATE TABLE IF NOT EXISTS documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(100) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    dpr VARCHAR(255) DEFAULT NULL,
+    reason TEXT DEFAULT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )`, () => {});
 
   db.query(`CREATE TABLE IF NOT EXISTS dpr_analysis (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -356,4 +370,5 @@ app.get('/blockchain/verify', (req, res) => {
   runBlockchain(['verify'], res);
 });
 
-app.listen(5000, () => console.log("Server running on port 5000"));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log("Server running on port", PORT));
