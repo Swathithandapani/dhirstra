@@ -11,13 +11,12 @@ const app = express();
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "http://localhost:3003"
+    "http://localhost:3003",
+    "https://dhirstra-production.up.railway.app"
   ],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  credentials: true
 }));
 
-app.options("*", cors());
 app.use(express.json());
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
