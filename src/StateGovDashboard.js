@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useProjectStatus, getOverallStatus } from './useProjectStatus';
 import ProjectStatusBanner, { ProjectStatusRow } from './ProjectStatusBanner';
 import { useNavigate } from 'react-router-dom';
@@ -6,7 +6,6 @@ import './StateGovDashboard.css';
 import LanguageSelector from './LanguageSelector';
 import { useT } from './LanguageContext';
 import BlockchainAudit from './BlockchainAudit';
-import API from './api';
 
 const mockProposals = [
   { id: 'DPR-2024-001', title: 'NH Extension - Tamil Nadu', type: 'Construction DPR', status: 'Under Review', date: '12-Jan-2024', amount: ' 245 Cr', priority: 'High', file: 'NH_Extension_DPR.pdf' },
@@ -86,10 +85,10 @@ export default function StateGovDashboard() {
   // Load documents from DB on mount
   React.useEffect(() => {
     Promise.all([
-      fetch(`${API}/documents/${user_id}`).then(r => r.json()),
-      fetch(`${API}/documents/nodal_rejected`).then(r => r.json()),
-      fetch(`${API}/documents/nodal_forwarded`).then(r => r.json()),
-      fetch(`${API}/ministry-decisions`).then(r => r.json()),
+      fetch(`http://localhost:5000/documents/${user_id}`).then(r => r.json()),
+      fetch('http://localhost:5000/documents/nodal_rejected').then(r => r.json()),
+      fetch('http://localhost:5000/documents/nodal_forwarded').then(r => r.json()),
+      fetch('http://localhost:5000/ministry-decisions').then(r => r.json()),
     ]).then(([docs, rejected, forwarded, mdList]) => {
       const mdMap = {};
       (Array.isArray(mdList) ? mdList : []).forEach(d => { mdMap[d.file_path] = d; });
@@ -144,11 +143,11 @@ export default function StateGovDashboard() {
     data.append('user_id', user_id);
 
     try {
-      const res = await fetch(`${API}/upload`, { method: 'POST', body: data });
+      const res = await fetch('http://localhost:5000/upload', { method: 'POST', body: data });
       const result = await res.json();
       if (res.ok) {
         // Log to blockchain
-        fetch(`${API}/blockchain/add`, {
+        fetch('http://localhost:5000/blockchain/add', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ dpr_id: formData.file.name, stage: 'A-AE Review', action: 'Submitted', reviewer: 'State Government' }),
         }).catch(() => {});
@@ -191,7 +190,7 @@ export default function StateGovDashboard() {
         <div className="sg-header-left">
           <img src="https://www.cleanpng.com/png-tamil-nadu-state-emblem-png-with-lion-and-tower-4kvtim/" alt="Tamil Nadu Emblem" className="sg-emblem" />
           <div>
-            <h1>A � AE Review</h1>
+            <h1>A — AE Review</h1>
             <p>{t('state_gov_dash')}</p>
           </div>
         </div>
@@ -220,7 +219,7 @@ export default function StateGovDashboard() {
           { key: 'track',       label: t('track_status') },
           { key: 'limits',      label: t('financial_limits') },
           { key: 'prioritize',  label: t('prioritize') },
-          { key: 'blockchain',  label: '? Audit Trail' },
+          { key: 'blockchain',  label: '⛓ Audit Trail' },
         ].map(tab => (
           <button key={tab.key} className={`sg-nav-btn ${activeTab === tab.key ? 'active' : ''}`} onClick={() => setActiveTab(tab.key)}>
             {tab.label}
@@ -428,9 +427,9 @@ export default function StateGovDashboard() {
         {/* BLOCKCHAIN AUDIT TRAIL */}
         {activeTab === 'blockchain' && (
           <div className="sg-section">
-            <h2 className="sg-section-title">? Blockchain Audit Trail � A (AE Review)</h2>
+            <h2 className="sg-section-title">⛓ Blockchain Audit Trail — A (AE Review)</h2>
             <p style={{color:'#666',fontSize:13,marginBottom:8}}>Every DPR submission from this stage is permanently recorded in the tamper-evident ledger.</p>
-            <BlockchainAudit title="A � AE Review Audit Trail" />
+            <BlockchainAudit title="A — AE Review Audit Trail" />
           </div>
         )}
 

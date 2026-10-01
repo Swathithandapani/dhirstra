@@ -6,7 +6,6 @@ import './SLECDashboard.css';
 import LanguageSelector from './LanguageSelector';
 import { useT } from './LanguageContext';
 import BlockchainAudit from './BlockchainAudit';
-import API from './api';
 
 const STATUS_COLOR = {
   'On Track':    '#43a047',
@@ -40,8 +39,8 @@ export default function SLECDashboard() {
   useEffect(() => {
     // Load forwarded DPRs + ministry decisions + stored analysis
     Promise.all([
-      fetch(`${API}/documents/nodal_forwarded`).then(r => r.json()),
-      fetch(`${API}/ministry-decisions`).then(r => r.json()),
+      fetch('http://localhost:5000/documents/nodal_forwarded').then(r => r.json()),
+      fetch('http://localhost:5000/ministry-decisions').then(r => r.json()),
     ]).then(([forwarded, mdList]) => {
       const mdMap = {};
       (Array.isArray(mdList) ? mdList : []).forEach(d => { mdMap[d.file_path] = d; });
@@ -54,7 +53,7 @@ export default function SLECDashboard() {
       // Load analysis for each approved DPR
       Promise.all(
         approved.map(doc =>
-          fetch(`${API}/analysis/${doc.file_path}`)
+          fetch(`http://localhost:5000/analysis/${doc.file_path}`)
             .then(r => r.ok ? r.json() : null)
             .then(analysis => ({ doc, analysis }))
             .catch(() => ({ doc, analysis: null }))
@@ -105,11 +104,11 @@ export default function SLECDashboard() {
     const newOM         = proj.omCompliance;
     const newRemarks    = remarks[proj.file_path] || '';
     try {
-      fetch(`${API}/blockchain/add`, {
+      fetch('http://localhost:5000/blockchain/add', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dpr_id: proj.file_path, stage: 'D-SC Review', action: 'Verified', reviewer: 'SLEC' }),
       }).catch(() => {});
-      await fetch(`${API}/slec-update`, {
+      await fetch('http://localhost:5000/slec-update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

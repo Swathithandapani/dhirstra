@@ -10,7 +10,6 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import API from './api';
 
 const STAGE_COLOR = {
   'A-AE Review':  '#1565c0',
@@ -47,11 +46,11 @@ export default function BlockchainAudit({ dprId, title }) {
     setError('');
     try {
       const url = dprId
-        ? `${API}/blockchain/trail/${encodeURIComponent(dprId)}`
-        : `${API}/blockchain/chain`;
+        ? `http://localhost:5000/blockchain/trail/${encodeURIComponent(dprId)}`
+        : 'http://localhost:5000/blockchain/chain';
       const [chainRes, verifyRes] = await Promise.all([
         fetch(url),
-        fetch(`${API}/blockchain/verify`),
+        fetch('http://localhost:5000/blockchain/verify'),
       ]);
       const chainData  = await chainRes.json();
       const verifyData = await verifyRes.json();

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import API from './api';
+
+const API = 'http://localhost:5000';
 
 export function useProjectStatus() {
   const [statusMap, setStatusMap] = useState({});

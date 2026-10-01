@@ -6,7 +6,7 @@ const path = require("path");
 const { createWorker } = require("tesseract.js");
 
 const app = express();
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(cors());
 app.use(express.json());
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
@@ -16,14 +16,7 @@ app.use("/uploads", (req, res, next) => {
 }, express.static(UPLOADS_DIR));
 
 const db = mysql.createConnection({
-  host: process.env.MYSQL_HOST || "localhost",
-  user: process.env.MYSQL_USER || "root",
-  password: process.env.MYSQL_PASSWORD || "root",
-  database: process.env.MYSQL_DATABASE || "dhirstra",
-  port: process.env.MYSQL_PORT || 3306,
-  ssl: process.env.MYSQL_HOST && process.env.MYSQL_HOST !== 'localhost'
-    ? { rejectUnauthorized: false }
-    : false
+  host: "localhost", user: "root", password: "root", database: "dhirstra"
 });
 
 db.connect((err) => {
@@ -84,9 +77,6 @@ db.connect((err) => {
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`, () => {});
 });
-
-// ── HEALTH CHECK ──
-app.get('/', (req, res) => res.json({ status: 'ok' }));
 
 // ── AUTH ──
 app.post("/signup", (req, res) => {
@@ -360,4 +350,4 @@ app.get('/blockchain/verify', (req, res) => {
   runBlockchain(['verify'], res);
 });
 
-app.listen(process.env.PORT || 5000, () => console.log("Server running on port", process.env.PORT || 5000));
+app.listen(5000, () => console.log("Server running on port 5000"));
