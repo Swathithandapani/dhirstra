@@ -19,6 +19,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!require('fs').existsSync(UPLOADS_DIR)) require('fs').mkdirSync(UPLOADS_DIR, { recursive: true });
 app.use("/uploads", (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   next();
@@ -104,6 +105,9 @@ db.connect((err) => {
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`, () => {});
 });
+
+// ── HEALTH CHECK ──
+app.get('/', (req, res) => res.json({ status: 'ok' }));
 
 // ── AUTH ──
 app.post("/signup", (req, res) => {
