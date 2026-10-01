@@ -46,11 +46,11 @@ export default function BlockchainAudit({ dprId, title }) {
     setError('');
     try {
       const url = dprId
-        ? `http://localhost:5000/blockchain/trail/${encodeURIComponent(dprId)}`
-        : 'http://localhost:5000/blockchain/chain';
+        ? `${process.env.REACT_APP_API_URL}/blockchain/trail/${encodeURIComponent(dprId)}`
+        : `${process.env.REACT_APP_API_URL}/blockchain/chain`;
       const [chainRes, verifyRes] = await Promise.all([
         fetch(url),
-        fetch('http://localhost:5000/blockchain/verify'),
+        fetch(`${process.env.REACT_APP_API_URL}/blockchain/verify`),
       ]);
       const chainData  = await chainRes.json();
       const verifyData = await verifyRes.json();

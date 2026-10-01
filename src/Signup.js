@@ -58,7 +58,7 @@ function Signup({ onSignup = () => {} }) {
     const errs = validate();
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     try {
-      const res = await fetch('http://localhost:5000/signup', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: form.userId, password: form.password, role: form.role }),

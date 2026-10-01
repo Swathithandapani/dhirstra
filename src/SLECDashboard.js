@@ -39,8 +39,8 @@ export default function SLECDashboard() {
   useEffect(() => {
     // Load forwarded DPRs + ministry decisions + stored analysis
     Promise.all([
-      fetch('http://localhost:5000/documents/nodal_forwarded').then(r => r.json()),
-      fetch('http://localhost:5000/ministry-decisions').then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL}/documents/nodal_forwarded`).then(r => r.json()),
+      fetch(`${process.env.REACT_APP_API_URL}/ministry-decisions`).then(r => r.json()),
     ]).then(([forwarded, mdList]) => {
       const mdMap = {};
       (Array.isArray(mdList) ? mdList : []).forEach(d => { mdMap[d.file_path] = d; });
@@ -53,7 +53,7 @@ export default function SLECDashboard() {
       // Load analysis for each approved DPR
       Promise.all(
         approved.map(doc =>
-          fetch(`http://localhost:5000/analysis/${doc.file_path}`)
+          fetch(`${process.env.REACT_APP_API_URL}/analysis/${doc.file_path}`)
             .then(r => r.ok ? r.json() : null)
             .then(analysis => ({ doc, analysis }))
             .catch(() => ({ doc, analysis: null }))
@@ -104,11 +104,11 @@ export default function SLECDashboard() {
     const newOM         = proj.omCompliance;
     const newRemarks    = remarks[proj.file_path] || '';
     try {
-      fetch('http://localhost:5000/blockchain/add', {
+      fetch(`${process.env.REACT_APP_API_URL}/blockchain/add`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ dpr_id: proj.file_path, stage: 'D-SC Review', action: 'Verified', reviewer: 'SLEC' }),
       }).catch(() => {});
-      await fetch('http://localhost:5000/slec-update', {
+      await fetch(`${process.env.REACT_APP_API_URL}/slec-update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
